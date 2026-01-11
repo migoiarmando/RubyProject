@@ -1,0 +1,25 @@
+<h1>Blog Posts</h1>
+
+<%= link_to 'New Post', new_post_path, class: 'btn btn-primary' %>
+
+<% if @posts.any? %>
+  <ul class="posts-list">
+    <% @posts.each do |post| %>
+      <li class="post-item">
+        <h2><%= link_to post.title, post_path(post) %></h2>
+        <p class="post-meta">
+          Created: <%= post.created_at.strftime('%B %d, %Y at %I:%M %p') %>
+        </p>
+        <p class="post-excerpt"><%= truncate(post.content, length: 150) %></p>
+        <div class="post-actions">
+          <%= link_to 'View', post_path(post), class: 'btn btn-view' %>
+          <%= link_to 'Edit', edit_post_path(post), class: 'btn btn-edit' %>
+          <%= link_to 'Delete', post_path(post), method: :delete, 
+              data: { confirm: 'Are you sure?' }, class: 'btn btn-delete' %>
+        </div>
+      </li>
+    <% end %>
+  </ul>
+<% else %>
+  <p class="no-posts">No posts yet. <%= link_to 'Create your first post', new_post_path %>!</p>
+<% end %>
