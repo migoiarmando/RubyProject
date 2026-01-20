@@ -1,23 +1,29 @@
 # Web UI controller for posts - handles HTML requests
 class PostsController < ApplicationController
-  # List all posts
+  # Require login for all actions except index and show
+  before_action :require_login, except: [:index, :show]
+  before_action :set_post, only: [:show, :edit, :update, :destroy]
+  before_action :authorize_post_owner, only: [:edit, :update, :destroy]
+
+  # List all posts - public (but shows more options if logged in)
   def index
-    @posts = Post.all.order(created_at: :desc)
+    @posts = Post.includes(:user, :comments, :reactions).recent
   end
 
-  # Show a single post
+  # Show a single post - public
   def show
-    @post = Post.find(params[:id])
+    @post = Post.includes(:user, comments: :user, reactions: :user).find(params[:id])
+    @comment = Comment.new
   end
 
-  # Display form to create a new post
+  # Display form to create a new post - requires login
   def new
     @post = Post.new
   end
 
-  # Create a new post
+  # Create a new post - requires login
   def create
-    @post = Post.new(post_params)
+    @post = current_user.posts.build(post_params)
 
     if @post.save
       redirect_to @post, notice: 'Post was successfully created.'
@@ -26,15 +32,12 @@ class PostsController < ApplicationController
     end
   end
 
-  # Display form to edit an existing post
+  # Display form to edit an existing post - requires ownership or admin
   def edit
-    @post = Post.find(params[:id])
   end
 
-  # Update an existing post
+  # Update an existing post - requires ownership or admin
   def update
-    @post = Post.find(params[:id])
-
     if @post.update(post_params)
       redirect_to @post, notice: 'Post was successfully updated.'
     else
@@ -42,18 +45,29 @@ class PostsController < ApplicationController
     end
   end
 
-  # Delete a post
+  # Delete a post - requires ownership or admin
   def destroy
-    @post = Post.find(params[:id])
     @post.destroy
-
     redirect_to posts_path, notice: 'Post was successfully deleted.'
   end
 
   private
 
-  # Strong parameters - only allow title and content
+  # Set the post from params
+  def set_post
+    @post = Post.find(params[:id])
+  end
+
+  # Authorization - only allow post owner or admin to edit/delete
+  def authorize_post_owner
+    unless current_user == @post.user || current_user&.admin?
+      flash[:alert] = 'You can only edit or delete your own posts.'
+      redirect_to @post
+    end
+  end
+
+  # Strong parameters - allow title, content, and image_url
   def post_params
-    params.require(:post).permit(:title, :content)
+    params.require(:post).permit(:title, :content, :image_url)
   end
 end

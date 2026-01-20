@@ -1,0 +1,83 @@
+<div class="admin-dashboard">
+  <h1>Admin Dashboard</h1>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <h2><%= @total_users %></h2>
+      <p>Total Users</p>
+    </div>
+    <div class="stat-card">
+      <h2><%= @total_posts %></h2>
+      <p>Total Posts</p>
+    </div>
+    <div class="stat-card">
+      <h2><%= @total_comments %></h2>
+      <p>Total Comments</p>
+    </div>
+    <div class="stat-card">
+      <h2><%= @total_reactions %></h2>
+      <p>Total Reactions</p>
+    </div>
+  </div>
+
+  <div class="admin-sections">
+    <div class="admin-section">
+      <h2>Recent Posts</h2>
+      <div class="admin-list">
+        <% if @recent_posts.any? %>
+          <% @recent_posts.each do |post| %>
+            <div class="admin-list-item">
+              <div class="item-info">
+                <strong><%= link_to post.title || 'Untitled', post_path(post) %></strong>
+                <span>by <%= post.user.username %></span>
+              </div>
+              <div class="item-actions">
+                <%= link_to 'Edit', edit_admin_post_path(post), class: 'btn btn-edit btn-sm' %>
+                <%= button_to 'Delete', admin_post_path(post), 
+                    method: :delete, 
+                    data: { turbo_confirm: 'Are you sure?' }, 
+                    class: 'btn btn-delete btn-sm',
+                    form: { style: 'display: inline-block;' } %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p>No posts yet.</p>
+        <% end %>
+      </div>
+    </div>
+
+    <div class="admin-section">
+      <h2>Recent Users</h2>
+      <div class="admin-list">
+        <% if @recent_users.any? %>
+          <% @recent_users.each do |user| %>
+            <div class="admin-list-item">
+              <div class="item-info">
+                <strong><%= user.username %></strong>
+                <span><%= user.email %></span>
+                <span class="badge <%= user.role %>"><%= user.role %></span>
+              </div>
+              <div class="item-actions">
+                <% unless user == current_user %>
+                  <%= button_to 'Delete', admin_user_path(user), 
+                      method: :delete, 
+                      data: { turbo_confirm: 'Are you sure?' }, 
+                      class: 'btn btn-delete btn-sm',
+                      form: { style: 'display: inline-block;' } %>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p>No users yet.</p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-links">
+    <%= link_to 'Manage All Users', admin_users_path, class: 'btn btn-primary' %>
+    <%= link_to 'Manage All Posts', admin_posts_path, class: 'btn btn-primary' %>
+  </div>
+</div>

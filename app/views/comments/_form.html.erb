@@ -1,0 +1,23 @@
+<% if logged_in? %>
+  <div class="comment-form-container">
+    <%= form_with model: [@post, @comment || Comment.new], local: true, class: 'comment-form' do |form| %>
+      <div class="form-group">
+        <%= form.text_area :content, 
+            class: 'form-control comment-input', 
+            placeholder: 'Add a comment...', 
+            rows: 2,
+            required: true %>
+      </div>
+      
+      <div class="form-actions">
+        <%= form.submit 'Post Comment', class: 'btn btn-primary btn-sm' %>
+      </div>
+    <% end %>
+  </div>
+<% else %>
+  <div class="comment-form-container">
+    <p class="comment-login-prompt">
+      <%= link_to 'Log in', login_path %> to post a comment.
+    </p>
+  </div>
+<% end %>

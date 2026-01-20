@@ -11,16 +11,32 @@
   <% end %>
 
   <div class="form-group">
-    <%= form.label :title %>
-    <%= form.text_field :title, class: 'form-control' %>
+    <%= form.label :title, "Title (Optional)" %>
+    <%= form.text_field :title, class: 'form-control', placeholder: 'Post title...' %>
+    <small class="form-hint">Leave blank for image-only posts</small>
   </div>
 
   <div class="form-group">
-    <%= form.label :content %>
-    <%= form.text_area :content, rows: 10, class: 'form-control' %>
+    <%= form.label :content, "Content" %>
+    <%= form.text_area :content, rows: 8, class: 'form-control', placeholder: 'What\'s on your mind?' %>
+    <small class="form-hint">Required unless you upload an image</small>
   </div>
+
+  <div class="form-group">
+    <%= form.label :image_url, "Image URL" %>
+    <%= form.url_field :image_url, class: 'form-control', placeholder: 'https://example.com/image.jpg' %>
+    <small class="form-hint">Paste a URL to an image (or leave blank for text-only post)</small>
+  </div>
+
+  <% if post.image_url.present? %>
+    <div class="form-group">
+      <label>Current Image:</label>
+      <img src="<%= post.image_url %>" alt="Post image" class="form-preview-image">
+    </div>
+  <% end %>
 
   <div class="form-actions">
     <%= form.submit class: 'btn btn-submit' %>
+    <%= link_to 'Cancel', post.persisted? ? post_path(post) : posts_path, class: 'btn btn-back' %>
   </div>
 <% end %>

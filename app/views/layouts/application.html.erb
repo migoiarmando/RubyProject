@@ -1,24 +1,149 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="dark">
   <head>
-    <title>Blog App</title>
+    <title>Social Media</title>
     <meta name="viewport" content="width=device-width,initial-scale=1">
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
     <script src="https://cdn.jsdelivr.net/npm/@hotwired/turbo-rails@7.3.0/dist/turbo.min.js" defer></script>
+    <script src="https://unpkg.com/lucide@latest" defer></script>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
   </head>
 
   <body>
-    <div class="container">
-      <% if notice %>
-        <p class="notice"><%= notice %></p>
-      <% end %>
-      <% if alert %>
-        <p class="alert"><%= alert %></p>
-      <% end %>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+      <div class="nav-container">
+        <div class="nav-brand">
+          <%= link_to root_path, class: 'nav-logo' do %>
+            <span class="logo-text">Social Media</span>
+          <% end %>
+        </div>
+
+        <div class="nav-search">
+          <!-- Search can be added later -->
+        </div>
+
+        <div class="nav-menu">
+          <% if logged_in? %>
+            <%= link_to root_path, class: 'nav-link' do %>
+              <i data-lucide="home" class="nav-icon"></i>
+              <span class="nav-text">Home</span>
+            <% end %>
+            
+            <%= link_to new_post_path, class: 'nav-link' do %>
+              <i data-lucide="plus" class="nav-icon"></i>
+              <span class="nav-text">Create</span>
+            <% end %>
+
+            <% if current_user.admin? %>
+              <%= link_to admin_root_path, class: 'nav-link' do %>
+                <i data-lucide="settings" class="nav-icon"></i>
+                <span class="nav-text">Admin</span>
+              <% end %>
+            <% end %>
+
+            <div class="nav-dropdown">
+              <button class="nav-link nav-user-btn">
+                <i data-lucide="user" class="nav-icon"></i>
+                <span class="nav-text"><%= current_user.username %></span>
+              </button>
+              <div class="nav-dropdown-menu">
+                <%= button_to logout_path, method: :delete, class: 'nav-dropdown-item nav-dropdown-button', form: { class: 'nav-dropdown-form' } do %>
+                  <i data-lucide="log-out" class="nav-icon-sm"></i>
+                  <span>Logout</span>
+                <% end %>
+              </div>
+            </div>
+          <% else %>
+            <%= link_to login_path, class: 'nav-link' do %>
+              <span class="nav-text">Log In</span>
+            <% end %>
+            <%= link_to register_path, class: 'nav-link nav-link-primary' do %>
+              <span class="nav-text">Sign Up</span>
+            <% end %>
+          <% end %>
+
+          <!-- Theme Toggle -->
+          <button class="theme-toggle" id="theme-toggle" aria-label="Toggle theme">
+            <i data-lucide="moon" id="theme-icon" class="theme-icon"></i>
+          </button>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Flash Messages -->
+    <% if notice %>
+      <div class="flash-message flash-notice">
+        <span><%= notice %></span>
+        <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+    <% end %>
+    <% if alert %>
+      <div class="flash-message flash-alert">
+        <span><%= alert %></span>
+        <button class="flash-close" onclick="this.parentElement.remove()">×</button>
+      </div>
+    <% end %>
+
+    <!-- Main Content -->
+    <main class="main-content">
       <%= yield %>
-    </div>
+    </main>
+
+    <!-- Theme Toggle Script -->
+    <script>
+      // Theme management
+      (function() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const html = document.documentElement;
+        
+        // Get theme from localStorage or default to dark
+        const currentTheme = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', currentTheme);
+        updateThemeIcon(currentTheme);
+
+        themeToggle.addEventListener('click', function() {
+          const currentTheme = html.getAttribute('data-theme');
+          const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+          html.setAttribute('data-theme', newTheme);
+          localStorage.setItem('theme', newTheme);
+          updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+          // Update Lucide icon
+          themeIcon.setAttribute('data-lucide', theme === 'dark' ? 'moon' : 'sun');
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+          }
+        }
+        
+        // Initialize Lucide icons when page loads
+        function initLucideIcons() {
+          if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+          } else {
+            // Retry if Lucide hasn't loaded yet
+            setTimeout(initLucideIcons, 100);
+          }
+        }
+        
+        // Initialize on DOM ready
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', initLucideIcons);
+        } else {
+          initLucideIcons();
+        }
+        
+        // Also initialize on Turbo navigation (for Rails)
+        document.addEventListener('turbo:load', initLucideIcons);
+      })();
+    </script>
   </body>
 </html>

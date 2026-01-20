@@ -1,0 +1,41 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>Post Management</h1>
+    <%= link_to 'Back to Dashboard', admin_root_path, class: 'btn btn-back' %>
+  </div>
+
+  <div class="admin-posts-list">
+    <% if @posts.any? %>
+      <% @posts.each do |post| %>
+        <div class="admin-post-item">
+          <div class="post-preview">
+            <% if post.image_url.present? %>
+              <img src="<%= post.image_url %>" alt="Post image" class="post-thumbnail">
+            <% end %>
+            <div class="post-info">
+              <h3><%= link_to post.title || 'Untitled', post_path(post) %></h3>
+              <p class="post-excerpt"><%= truncate(post.content, length: 100) %></p>
+              <div class="post-meta">
+                <span>by <%= post.user.username %></span>
+                <span><%= post.created_at.strftime('%b %d, %Y') %></span>
+                <span><%= pluralize(post.comments.count, 'comment') %></span>
+                <span><%= pluralize(post.reactions.count, 'reaction') %></span>
+              </div>
+            </div>
+          </div>
+          <div class="post-actions">
+            <%= link_to 'View', post_path(post), class: 'btn btn-view btn-sm' %>
+            <%= link_to 'Edit', edit_admin_post_path(post), class: 'btn btn-edit btn-sm' %>
+            <%= button_to 'Delete', admin_post_path(post), 
+                method: :delete, 
+                data: { turbo_confirm: 'Are you sure?' }, 
+                class: 'btn btn-delete btn-sm',
+                form: { style: 'display: inline-block;' } %>
+          </div>
+        </div>
+      <% end %>
+    <% else %>
+      <p>No posts yet.</p>
+    <% end %>
+  </div>
+</div>

@@ -1,25 +1,103 @@
-<h1>Blog Posts</h1>
+<div class="feed-container">
+  <% if logged_in? %>
+    <div class="create-post-prompt">
+      <%= link_to new_post_path, class: 'create-post-btn' do %>
+        <i data-lucide="pen-tool" class="icon-sm"></i>
+        <span>Create a new post</span>
+      <% end %>
+    </div>
+  <% end %>
 
-<%= link_to 'New Post', new_post_path, class: 'btn btn-primary' %>
+  <% if @posts.any? %>
+    <div class="posts-feed">
+      <% @posts.each do |post| %>
+        <article class="post-card">
+          <!-- Post Header -->
+          <div class="post-header">
+            <div class="post-author">
+              <div class="author-avatar">
+                <%= post.user.username.first.upcase %>
+              </div>
+              <div class="author-info">
+                <strong class="author-name"><%= post.user.username %></strong>
+                <span class="post-time"><%= time_ago_in_words(post.created_at) %> ago</span>
+              </div>
+            </div>
+            <% if logged_in? && (current_user == post.user || current_user.admin?) %>
+              <div class="post-menu">
+                <button class="post-menu-btn">⋯</button>
+                <div class="post-menu-dropdown">
+                  <% if current_user == post.user %>
+                    <%= link_to 'Edit', edit_post_path(post), class: 'post-menu-item' %>
+                  <% end %>
+                  <%= link_to 'Delete', post_path(post), 
+                      data: { turbo_method: :delete, turbo_confirm: 'Are you sure?' }, 
+                      class: 'post-menu-item post-menu-item-danger' %>
+                </div>
+              </div>
+            <% end %>
+          </div>
 
-<% if @posts.any? %>
-  <ul class="posts-list">
-    <% @posts.each do |post| %>
-      <li class="post-item">
-        <h2><%= link_to post.title, post_path(post) %></h2>
-        <p class="post-meta">
-          Created: <%= post.created_at.strftime('%B %d, %Y at %I:%M %p') %>
-        </p>
-        <p class="post-excerpt"><%= truncate(post.content, length: 150) %></p>
-        <div class="post-actions">
-          <%= link_to 'View', post_path(post), class: 'btn btn-view' %>
-          <%= link_to 'Edit', edit_post_path(post), class: 'btn btn-edit' %>
-          <%= link_to 'Delete', post_path(post), method: :delete, 
-              data: { confirm: 'Are you sure?' }, class: 'btn btn-delete' %>
-        </div>
-      </li>
-    <% end %>
-  </ul>
-<% else %>
-  <p class="no-posts">No posts yet. <%= link_to 'Create your first post', new_post_path %>!</p>
-<% end %>
+          <!-- Post Image -->
+          <% if post.image_url.present? %>
+            <div class="post-image-container">
+              <img src="<%= post.image_url %>" alt="<%= post.title || 'Post image' %>" class="post-image">
+            </div>
+          <% end %>
+
+          <!-- Post Content -->
+          <div class="post-body">
+            <% if post.title.present? %>
+              <h2 class="post-title"><%= post.title %></h2>
+            <% end %>
+            <% if post.content.present? %>
+              <p class="post-content"><%= simple_format(post.content) %></p>
+            <% end %>
+          </div>
+
+          <!-- Reactions -->
+          <% if logged_in? %>
+            <%= render 'posts/reactions', post: post %>
+          <% else %>
+            <div class="reactions-container">
+              <div class="reactions-summary">
+                <% total_reactions = post.reactions.count %>
+                <% if total_reactions > 0 %>
+                  <span class="reactions-text"><%= pluralize(total_reactions, 'reaction') %></span>
+                <% end %>
+              </div>
+            </div>
+          <% end %>
+
+          <!-- Comments Preview -->
+          <% if post.comments.any? %>
+            <div class="comments-preview">
+              <% post.comments.limit(2).each do |comment| %>
+                <div class="comment-preview-item">
+                  <strong><%= comment.user.username %></strong>
+                  <span><%= truncate(comment.content, length: 100) %></span>
+                </div>
+              <% end %>
+              <% if post.comments.count > 2 %>
+                <div class="view-all-comments">
+                  <%= link_to "View all #{post.comments.count} comments", post_path(post), class: 'view-comments-link' %>
+                </div>
+              <% end %>
+            </div>
+          <% end %>
+
+          <!-- View Post Link -->
+          <div class="post-footer">
+            <%= link_to 'View Post', post_path(post), class: 'view-post-link' %>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="empty-state">
+      <i data-lucide="inbox" class="empty-icon"></i>
+      <h2>No posts yet</h2>
+      <p>Be the first to <%= link_to 'create a post', new_post_path %>!</p>
+    </div>
+  <% end %>
+</div>

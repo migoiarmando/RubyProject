@@ -1,0 +1,31 @@
+<% post ||= @post %>
+<div class="reactions-container">
+  <div class="reactions-buttons">
+    <% Reaction.reaction_types.each do |reaction_type| %>
+      <% is_active = post.user_reacted?(current_user, reaction_type) if current_user %>
+      <% count = post.reaction_counts[reaction_type] || 0 %>
+      
+      <%= form_with url: post_reactions_path(post), method: :post, local: true, class: 'reaction-form' do |form| %>
+        <%= form.hidden_field :reaction_type, value: reaction_type %>
+        <button type="submit" 
+                class="reaction-btn <%= 'active' if is_active %>" 
+                data-reaction="<%= reaction_type %>"
+                title="<%= reaction_type.capitalize %>">
+          <i data-lucide="<%= reaction_icon(reaction_type) %>" class="reaction-icon"></i>
+          <% if count > 0 %>
+            <span class="reaction-count"><%= count %></span>
+          <% end %>
+        </button>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if post.reactions.any? %>
+    <div class="reactions-summary">
+      <% total_reactions = post.reactions.count %>
+      <span class="reactions-text">
+        <%= pluralize(total_reactions, 'reaction') %>
+      </span>
+    </div>
+  <% end %>
+</div>

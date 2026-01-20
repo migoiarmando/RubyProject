@@ -1,0 +1,8 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>Edit Post (Admin)</h1>
+    <%= link_to 'Back to Posts', admin_posts_path, class: 'btn btn-back' %>
+  </div>
+
+  <%= render 'posts/form', post: @post %>
+</div>

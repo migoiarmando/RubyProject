@@ -1,0 +1,49 @@
+<div class="admin-page">
+  <div class="admin-header">
+    <h1>User Management</h1>
+    <%= link_to 'Back to Dashboard', admin_root_path, class: 'btn btn-back' %>
+  </div>
+
+  <div class="admin-table">
+    <table>
+      <thead>
+        <tr>
+          <th>Username</th>
+          <th>Email</th>
+          <th>Full Name</th>
+          <th>Role</th>
+          <th>Posts</th>
+          <th>Comments</th>
+          <th>Joined</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% @users.each do |user| %>
+          <tr>
+            <td><strong><%= user.username %></strong></td>
+            <td><%= user.email %></td>
+            <td><%= user.full_name || '-' %></td>
+            <td>
+              <span class="badge <%= user.role %>"><%= user.role %></span>
+            </td>
+            <td><%= user.posts.count %></td>
+            <td><%= user.comments.count %></td>
+            <td><%= user.created_at.strftime('%b %d, %Y') %></td>
+            <td>
+              <% unless user == current_user %>
+                <%= button_to 'Delete', admin_user_path(user), 
+                    method: :delete, 
+                    data: { turbo_confirm: "Are you sure you want to delete #{user.username}? This will also delete all their posts and comments." }, 
+                    class: 'btn btn-delete btn-sm',
+                    form: { style: 'display: inline-block;' } %>
+              <% else %>
+                <span class="text-muted">Current User</span>
+              <% end %>
+            </td>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+</div>
